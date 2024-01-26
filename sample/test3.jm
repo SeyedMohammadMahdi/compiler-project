@@ -1,0 +1,14 @@
+class Main {
+    public static void main(String[] args) {
+
+    }
+}
+
+class Base inherits Rest implements Face,MyFace{
+    public number set(number x, C d) {
+        if (a<0){
+                    number a;
+        }
+        number[] data;
+    }
+}

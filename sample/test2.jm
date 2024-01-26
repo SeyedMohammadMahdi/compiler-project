@@ -1,0 +1,12 @@
+class Main {
+    public static void main(String[] args) {
+
+    }
+}
+
+class Base inherits Rest implements Face,MyFace{
+    number[] data;
+    private Rest[] d;
+    Object obj = new Object().go(2);
+    private number value = newObject.go(2) ;
+}

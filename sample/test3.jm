@@ -5,7 +5,9 @@ Derived d;
 number x;
 b = new Base();
 d = new Derived();
+{
 b = d;
+}
 print(b.set(1));
 print(b.set(3));
 }
@@ -13,9 +15,10 @@ print(b.set(3));
 class Rest implements Nothing{
 }
 class Base inherits Rest implements Face,MyFace{
-number[] data;
+Hi data = g;
 private Rest[] d;
-private number set(number[] x) {
+private number set(Hi[] x) {
+number[] a;
 data = x;
 ret data;
 }
@@ -26,6 +29,7 @@ private number test(){
 while(1)
 number x;
 number b ;
+c.get();
 {
 number t;
 a = 0;
@@ -43,12 +47,20 @@ public number set(number x, C d) {
 data = x * 2;
 {
 Base[] t;
-Base c;
-
-number test;
 }
-if (a<0)
+if (a<0){
+    while(a<2){
+    if(a<2){
+    }
+    }
+    if(a<2){
+
+    }
+    else{
+    }
+}
 number a;
+a = 6;
 ret data;
 }
 }
@@ -57,8 +69,8 @@ private void sayHi(number one, boolean two, Hi three, number four){
 }
 }
 interface Face{
-final number a = {1,2};
-number getFace(Hi[] test, number t, Hi b);
+final number[] a = {1,2};
+number getFace(number te);
 }
 interface MyFace{
 final String myFace= ":)";

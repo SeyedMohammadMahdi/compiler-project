@@ -11,6 +11,7 @@ import java.util.*;
 public class ProgramPrinter implements MiniJavaListener {
     Stack<SymbolTable> currentScope;
     Queue<SymbolTable> scopes;
+    int nested = 0;
     int id = 0;
 
     public ProgramPrinter() {
@@ -355,16 +356,17 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterNestedStatement(MiniJavaParser.NestedStatementContext ctx) {
-
+        this.nested++;
     }
 
     @Override
     public void exitNestedStatement(MiniJavaParser.NestedStatementContext ctx) {
-
+        this.nested--;
     }
 
     @Override
     public void enterIfElseStatement(MiniJavaParser.IfElseStatementContext ctx) {
+
 
     }
 
@@ -435,32 +437,75 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterIfBlock(MiniJavaParser.IfBlockContext ctx) {
+//        created this scopes Symbol table
+        String name;
+        int parentId = this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        if(this.nested > 0){
+            name = "nested_if";
+        }
+        else {
+            name = "if";
+        }
 
+        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
+        this.nested++;
     }
 
     @Override
     public void exitIfBlock(MiniJavaParser.IfBlockContext ctx) {
-
+        this.currentScope.pop();
+        this.nested--;
     }
 
     @Override
     public void enterElseBlock(MiniJavaParser.ElseBlockContext ctx) {
+        String name;
+        int parentId = this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        if(this.nested > 0){
+            name = "nested_else";
+        }
+        else {
+            name = "else";
+        }
 
+        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
+        this.nested++;
     }
 
     @Override
     public void exitElseBlock(MiniJavaParser.ElseBlockContext ctx) {
-
+        this.currentScope.pop();
+        this.nested--;
     }
 
     @Override
     public void enterWhileBlock(MiniJavaParser.WhileBlockContext ctx) {
+        String name;
+        int parentId = this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        if(this.nested > 0){
+            name = "nested_while";
+        }
+        else {
+            name = "while";
+        }
 
+        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
+        this.nested++;
     }
 
     @Override
     public void exitWhileBlock(MiniJavaParser.WhileBlockContext ctx) {
-
+        this.currentScope.pop();
+        this.nested--;
     }
 
     @Override

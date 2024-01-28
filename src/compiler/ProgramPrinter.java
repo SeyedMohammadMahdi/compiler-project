@@ -131,7 +131,7 @@ public class ProgramPrinter implements MiniJavaListener {
         this.currentScope.peek().symbolTable.put(key, entry);
 
 //        created this scope's Symbol table
-        String name = ctx.Identifier().getText();
+        String name = "interface_" + ctx.Identifier().getText();
         int parentId = this.currentScope.peek().id;
         int line = ctx.getStart().getLine();
         SymbolTable table = new SymbolTable(name, id, parentId, line);
@@ -155,23 +155,20 @@ public class ProgramPrinter implements MiniJavaListener {
             value += " (accessModifier: " + ctx.accessModifier().getText() + ")";
         }
 
-        if (ctx.parameterList() != null){
+        if(ctx.parameterList() != null){
             int i = 0;
             int paramCount = ctx.parameterList().parameter().size();
             value += " (parametersType: ";
             for (;i < paramCount; i ++){
-                value += "[" + ctx.parameterList().parameter(i).type().getText() + ", " + "index: " + (i + 1 ) + "]";
+                if(ctx.parameterList().parameter(i).type().javaType() != null){
+                    value += "[" + ctx.parameterList().parameter(i).type().getText() + ", " + "index: " + (i + 1 ) + "]";
+                }
+                else {
+                    value += "[ classType:" + ctx.parameterList().parameter(i).type().Identifier().getText() + ", " + "index: " + (i + 1 ) + "]";
+                }
             }
         }
 
-//        try {
-//            int i = 0;
-//            int paramCount = ctx.parameterList().parameter().size();
-//            value += " (parametersType: ";
-//            for (;i < paramCount; i ++){
-//                value += "[" + ctx.parameterList().parameter(i).type().getText() + ", " + "index: " + (i + 1 ) + "]";
-//            }
-//        } catch (Exception e) {}
 
         SymbolTableEntry entry  = new SymbolTableEntry(key, value);
         this.currentScope.peek().symbolTable.put(key, entry);
@@ -248,12 +245,42 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterMethodDeclaration(MiniJavaParser.MethodDeclarationContext ctx) {
+//        created this line's Symbol table entry
+        String key = "Key = mehtod_" + ctx.Identifier().getText();
+        String value = "Value = Method: (name: " + ctx.Identifier().getText() + ") (returnType: " + ctx.returnType().getText() + ")";
+        if(ctx.accessModifier() != null){
+            value += " (accessModifier: " + ctx.accessModifier().getText();
+        }
 
+        if(ctx.parameterList() != null){
+            int i = 0;
+            int paramCount = ctx.parameterList().parameter().size();
+            value += " (parametersType: ";
+            for (;i < paramCount; i ++){
+                if(ctx.parameterList().parameter(i).type().javaType() != null){
+                    value += "[" + ctx.parameterList().parameter(i).type().getText() + ", " + "index: " + (i + 1 ) + "]";
+                }
+                else {
+                    value += "[ classType:" + ctx.parameterList().parameter(i).type().Identifier().getText() + ", " + "index: " + (i + 1 ) + "]";
+                }
+            }
+        }
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
+
+
+//        created this scope's Symbol table
+        String name = "method_" + ctx.Identifier().getText();
+        int parentId = this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
     }
 
     @Override
     public void exitMethodDeclaration(MiniJavaParser.MethodDeclarationContext ctx) {
-
+        this.currentScope.pop();
     }
 
     @Override

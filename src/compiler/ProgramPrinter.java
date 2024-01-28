@@ -150,21 +150,28 @@ public class ProgramPrinter implements MiniJavaListener {
         String key = "Key = method_" + ctx.Identifier().getText();
         String value = "Value = Method: (name: " + ctx.Identifier().getText() + ") (returnType: " + ctx.returnType().getText() + ")";
 
-        try {
-            String modifier =  " (accessModifier: " + ctx.accessModifier().getText() + ")";
-            value += modifier;
-        }catch (Exception e){
-            value +=  " (accessModifier: private)";
+
+        if (ctx.accessModifier() != null){
+            value += " (accessModifier: " + ctx.accessModifier().getText() + ")";
         }
 
-        try {
+        if (ctx.parameterList() != null){
             int i = 0;
             int paramCount = ctx.parameterList().parameter().size();
             value += " (parametersType: ";
             for (;i < paramCount; i ++){
                 value += "[" + ctx.parameterList().parameter(i).type().getText() + ", " + "index: " + (i + 1 ) + "]";
             }
-        } catch (Exception e) {}
+        }
+
+//        try {
+//            int i = 0;
+//            int paramCount = ctx.parameterList().parameter().size();
+//            value += " (parametersType: ";
+//            for (;i < paramCount; i ++){
+//                value += "[" + ctx.parameterList().parameter(i).type().getText() + ", " + "index: " + (i + 1 ) + "]";
+//            }
+//        } catch (Exception e) {}
 
         SymbolTableEntry entry  = new SymbolTableEntry(key, value);
         this.currentScope.peek().symbolTable.put(key, entry);
@@ -181,26 +188,25 @@ public class ProgramPrinter implements MiniJavaListener {
 //        created this line's Symbol table entry
         String key = "Key = var_" + ctx.Identifier().getText();
         String value = "Value = Field: (name: " + ctx.Identifier().getText() + ")";
-//        this try catches are related to type of field maybe the field has javatype or another Identifier
-//        as it is optional based on grammar it may cause error
-        try{
-            ctx.type().LSB().getText();
+
+
+        if(ctx.type().LSB() != null){
             value += " (type: array of " ;
-        }catch (Exception e){
+        }
+        else {
             value += " (type: ";
         }
 
-        try {
+        if(ctx.type().Identifier() != null){
             value += "[ classType: " + ctx.type().Identifier().getText() + " ])";
-        }catch (Exception ex){
+        }
+        else {
             value += ctx.type().javaType().getText() + ")";
         }
 
-//        this try catch is for access modifier
-        try {
+        if(ctx.accessModifier() != null){
             value += " (accesModifier: " + ctx.accessModifier().getText() + ")";
-        }catch (Exception e){}
-
+        }
 
         SymbolTableEntry entry = new SymbolTableEntry(key, value);
         this.currentScope.peek().symbolTable.put(key, entry);
@@ -213,7 +219,26 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterLocalDeclaration(MiniJavaParser.LocalDeclarationContext ctx) {
+//        created this line's Symbol table entry
+        String key = "Key = var_" + ctx.Identifier().getText();
+        String value = "Value = LocalVar: (name: " + ctx.Identifier().getText() + ")";
 
+        if(ctx.type().LSB() != null){
+            value += " (type: array of ";
+        }
+        else {
+            value += " (type: ";
+        }
+
+        if(ctx.type().javaType() != null){
+            value += ctx.type().javaType().getText() + ")";
+        }
+        else {
+            value += "[ classType: " + ctx.type().Identifier().getText() + " ])";
+        }
+
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
     }
 
     @Override

@@ -43,6 +43,9 @@ public number set(number x, C d) {
 data = x * 2;
 {
 Base[] t;
+Base c;
+
+number test;
 }
 if (a<0)
 number a;
@@ -55,7 +58,7 @@ private void sayHi(number one, boolean two, Hi three, number four){
 }
 interface Face{
 final number a = {1,2};
-public number getFace(number a, number b);
+number getFace();
 }
 interface MyFace{
 final String myFace= ":)";

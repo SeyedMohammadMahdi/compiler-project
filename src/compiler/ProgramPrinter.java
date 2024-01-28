@@ -174,11 +174,19 @@ public class ProgramPrinter implements MiniJavaListener {
         SymbolTableEntry entry  = new SymbolTableEntry(key, value);
         this.currentScope.peek().symbolTable.put(key, entry);
 
+//        created symbol table for this scope
+        String name = "interface_method_" + ctx.Identifier().getText();
+        int parentId = this.currentScope.peek().id;
+        int line =ctx.getStart().getLine();
+        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
+
     }
 
     @Override
     public void exitInterfaceMethodDeclaration(MiniJavaParser.InterfaceMethodDeclarationContext ctx) {
-
+        this.currentScope.pop();
     }
 
     @Override
@@ -296,7 +304,25 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterParameter(MiniJavaParser.ParameterContext ctx) {
+//        created this line's Symbol Table entry
+        String key = "Key = var_" + ctx.Identifier().getText();
+        String value = "value = Parameter: (name: " + ctx.Identifier().getText() + ")";
+        if(ctx.type().LSB() != null){
+            value += " (type: array of ";
+        }
+        else {
+            value += " (type: ";
+        }
 
+        if(ctx.type().javaType() != null){
+            value += ctx.type().javaType().getText() + ")";
+        }
+        else {
+            value += "[ classType: " + ctx.type().Identifier().getText() + "])";
+        }
+
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
     }
 
     @Override

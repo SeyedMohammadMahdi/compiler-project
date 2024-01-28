@@ -10,41 +10,79 @@ import java.util.*;
 
 public class ProgramPrinter implements MiniJavaListener {
     Stack<SymbolTable> currentScope;
-    Queue<SymbolTable> scope;
+    Queue<SymbolTable> scopes;
+    int id = 0;
 
     public ProgramPrinter() {
-        this.current = new Stack<SymbolTable>();
-        this.scope = new LinkedList<SymbolTable>();
+        this.currentScope = new Stack<SymbolTable>();
+        this.scopes = new LinkedList<SymbolTable>();
+    }
+
+    private void printResult() {
+        Iterator it = this.scopes.iterator();
+        while (it.hasNext()){
+            SymbolTable s = ((SymbolTable)it.next());
+            s.print();
+        }
     }
 
     @Override
     public void enterProgram(MiniJavaParser.ProgramContext ctx) {
-
+        SymbolTable s = new SymbolTable("Program", id++, 0);
+        this.currentScope.push(s);
+        this.scopes.add(s);
     }
 
     @Override
     public void exitProgram(MiniJavaParser.ProgramContext ctx) {
-
+        this.printResult();
     }
 
     @Override
     public void enterMainClass(MiniJavaParser.MainClassContext ctx) {
+//        created this lines Symbol entry
+        String key = "Key = MainClass_" + ctx.className.getText();
+        String value = "Value = ";
+        value += "MainClass: (name: " + ctx.className.getText() + ")";
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
+
+
+//        created this scopes Symbol table
+        String name = "MainClass_" + ctx.className.getText();
+        int parentId =this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
+
 
     }
 
     @Override
     public void exitMainClass(MiniJavaParser.MainClassContext ctx) {
-
+        this.currentScope.pop();
     }
 
     @Override
     public void enterMainMethod(MiniJavaParser.MainMethodContext ctx) {
-
+//        created this lines Symbol table entry
+        String value = "Value = Method: (name: main) (returnType: void) (accessModifier: public) (parametersType: [array of [classType = String, isDefined = true] , index: 1] )";
+        String key = "method_main";
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
+//        created this scopes Symbol table
+        String name = "method_main";
+        int parentId = this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
     }
 
     @Override
     public void exitMainMethod(MiniJavaParser.MainMethodContext ctx) {
-
+        this.currentScope.pop();
     }
 
     @Override
@@ -523,16 +561,45 @@ class SymbolTable{
     public String name;
     public int id;
     public int parentId;
-    public int line = 0;
+    public int line = 1;
     public Map<String, SymbolTableEntry> symbolTable;
-    public SymbolTable(){
+
+    public SymbolTable(String name, int id, int parentId){
         this.symbolTable = new LinkedHashMap<>();
+        this.name = name;
+        this.id = id;
+        this.parentId = parentId;
+    }
+    public SymbolTable(String name, int id, int parentId, int line){
+        this.symbolTable = new LinkedHashMap<>();
+        this.name = name;
+        this.id = id;
+        this.parentId = parentId;
+        this.line = line;
+    }
+
+    public void print(){
+        System.out.println("-------------- " + this.name + ": " + this.line + " --------------");
+        if (!this.symbolTable.isEmpty()){
+            for(Map.Entry<String, SymbolTableEntry> entry : this.symbolTable.entrySet()){
+                entry.getValue().print();
+            }
+        }
+        System.out.println("--------------------------------------------------------");
+
     }
 }
 
 class SymbolTableEntry{
-    public String name;
-    public SymbolTableEntry(String name){
-        this.name = name;
+    public String key;
+    public String value;
+    public SymbolTableEntry(String key, String value){
+        this.key = key;
+        this.value = value;
+    }
+
+    public void print(){
+        System.out.print(key + "\t|\t");
+        System.out.println(value);
     }
 }

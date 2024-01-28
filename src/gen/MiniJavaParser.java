@@ -664,6 +664,7 @@ public class MiniJavaParser extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class FieldDeclarationContext extends ParserRuleContext {
+		public Token final_;
 		public TypeContext type() {
 			return getRuleContext(TypeContext.class,0);
 		}
@@ -671,11 +672,11 @@ public class MiniJavaParser extends Parser {
 		public AccessModifierContext accessModifier() {
 			return getRuleContext(AccessModifierContext.class,0);
 		}
-		public TerminalNode Final() { return getToken(MiniJavaParser.Final, 0); }
 		public TerminalNode EQ() { return getToken(MiniJavaParser.EQ, 0); }
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode Final() { return getToken(MiniJavaParser.Final, 0); }
 		public FieldDeclarationContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -718,7 +719,7 @@ public class MiniJavaParser extends Parser {
 			if (_la==Final) {
 				{
 				setState(139);
-				match(Final);
+				((FieldDeclarationContext)_localctx).final_ = match(Final);
 				}
 			}
 

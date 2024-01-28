@@ -19,7 +19,7 @@ interfaceMethodDeclaration
 :	 (accessModifier)? returnType Identifier '(' parameterList? ')' ';';
 
 fieldDeclaration
-:	 (accessModifier)? (Final)? type Identifier (EQ expression)?';'
+:	  (accessModifier)? (final = Final)? type Identifier (EQ expression)?';'
 ;
 localDeclaration
 :	type Identifier ';';

@@ -178,7 +178,32 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterFieldDeclaration(MiniJavaParser.FieldDeclarationContext ctx) {
+//        created this line's Symbol table entry
+        String key = "Key = var_" + ctx.Identifier().getText();
+        String value = "Value = Field: (name: " + ctx.Identifier().getText() + ")";
+//        this try catches are related to type of field maybe the field has javatype or another Identifier
+//        as it is optional based on grammar it may cause error
+        try{
+            ctx.type().LSB().getText();
+            value += " (type: array of " ;
+        }catch (Exception e){
+            value += " (type: ";
+        }
 
+        try {
+            value += "[ classType: " + ctx.type().Identifier().getText() + " ])";
+        }catch (Exception ex){
+            value += ctx.type().javaType().getText() + ")";
+        }
+
+//        this try catch is for access modifier
+        try {
+            value += " (accesModifier: " + ctx.accessModifier().getText() + ")";
+        }catch (Exception e){}
+
+
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
     }
 
     @Override

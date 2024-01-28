@@ -13,7 +13,7 @@ import java.io.IOException;
 
 public class Compiler {
     public static void main(String[] args) throws IOException  {
-        CharStream stream = CharStreams.fromFileName("./sample/test.jm");
+        CharStream stream = CharStreams.fromFileName("./sample/test3.jm");
         MiniJavaLexer lexer = new MiniJavaLexer(stream);
         TokenStream tokens = new CommonTokenStream(lexer);
         MiniJavaParser parser = new MiniJavaParser(tokens);

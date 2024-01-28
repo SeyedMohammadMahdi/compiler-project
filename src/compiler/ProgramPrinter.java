@@ -6,135 +6,62 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Stack;
 
 public class ProgramPrinter implements MiniJavaListener {
-//    public static int indent_level = 0;
-//    private boolean nestedBlockForStatement = false;
-//    private Stack<Boolean> nestedBlockStack = new Stack<Boolean>();
-//
-//    private String typeCheck(MiniJavaParser.TypeContext miniJavaDataType){
-//        String type;
-//
-//        if (miniJavaDataType.javaType() != null){
-//            type = (miniJavaDataType.javaType().getText().equals("number")) ? "int" : miniJavaDataType.javaType().getText() ;
-//        }else {
-//            type = (miniJavaDataType.Identifier().getText().equals("number")) ? "int" : miniJavaDataType.Identifier().getText() ;
-//        }
-//
-//        if (miniJavaDataType.LSB() != null)
-//            type = type.concat(miniJavaDataType.LSB().getText());
-//        if (miniJavaDataType.RSB() != null)
-//            type = type.concat(miniJavaDataType.RSB().getText());
-//
-//        return type;
-//    }
-
-//    private String interfaceMethodSignature (MiniJavaParser.InterfaceMethodDeclarationContext methodNode){
-//        String str = "\t";
-//
-//        if(methodNode.accessModifier() != null){
-//            str = str.concat(methodNode.accessModifier().getText() + " ");
-//        }
-//        if (methodNode.returnType().type() == null){
-//            str = str.concat(methodNode.returnType().getText() + " ");
-//        }else{
-//            str = str.concat(this.typeCheck(methodNode.returnType().type()) + " ");
-//        }
-//
-//        str = str.concat(methodNode.Identifier().getText() + " (");
-//        //System.out.println(methodNode.parameterList().parameter().get(0).type().getText());
-//        if (methodNode.parameterList() != null) {
-//            for (int i = 0; i <= methodNode.parameterList().parameter().size() - 1; i++) {
-//                str = str.concat(this.typeCheck(methodNode.parameterList().parameter().get(i).type()) + " " + methodNode.parameterList().parameter().get(i).Identifier());
-//                if (i != methodNode.parameterList().parameter().size() - 1) {
-//                    str = str.concat(", ");
-//                } else {
-//                    str = str.concat(");\n");
-//                }
-//            }
-//        }else{
-//            str = str.concat(");\n");
-//        }
-//
-//        return str;
-//    }
-
-//    private String classMethodSignature (MiniJavaParser.MethodDeclarationContext methodNode){
-//        String str = "\t";
-//
-//        if (methodNode.Override() != null){
-//            str = str.concat(methodNode.Override().getText() + "\n\t");
-//        }
-//
-//        if(methodNode.accessModifier() != null){
-//            str = str.concat(methodNode.accessModifier().getText() + " ");
-//        }
-//        if (methodNode.returnType().type() == null){
-//            str = str.concat(methodNode.returnType().getText() + " ");
-//        }else{
-//            str = str.concat(this.typeCheck(methodNode.returnType().type()) + " ");
-//        }
-//
-//        str = str.concat(methodNode.Identifier().getText() + " (");
-//        //System.out.println(methodNode.parameterList().parameter().get(0).type().getText());
-//        if (methodNode.parameterList() != null) {
-//            for (int i = 0; i <= methodNode.parameterList().parameter().size() - 1; i++) {
-//                str = str.concat(this.typeCheck(methodNode.parameterList().parameter().get(i).type()) + " " + methodNode.parameterList().parameter().get(i).Identifier());
-//                if (i != methodNode.parameterList().parameter().size() - 1) {
-//                    str = str.concat(", ");
-//                } else {
-//                    str = str.concat(") {\n");
-//                }
-//            }
-//        }else{
-//            str = str.concat(") {\n");
-//        }
-//
-//        return str;
-//    }
-
-//    private void tabPrint(int tabCount){
-//        for (int i=0; i<tabCount; i++)
-//            System.out.print("\t");
-//    }
-
-//    private String getExpression(MiniJavaParser.ExpressionContext expressionNode){
-//        if (expressionNode.start.getText().equals("new")){
-//            return expressionNode.getText().replace("new", "new ")  ;
-//        }else {
-//            return expressionNode.getText();
-//        }
-//    }
+//    private int test = 0;
+    Stack<String> current;
+    Queue<String> scope;
+    public ProgramPrinter() {
+        this.current = new Stack<String>();
+        this.scope = new LinkedList<String>();
+        this.scope.peek();
+    }
 
     @Override
     public void enterProgram(MiniJavaParser.ProgramContext ctx) {
-
+//        System.out.println(ctx.invokingState);
+        this.current.push("program" + ctx.getStart().getLine());
+        this.scope.add("program" + ctx.getStart().getLine());
     }
 
     @Override
     public void exitProgram(MiniJavaParser.ProgramContext ctx) {
+        String out = this.current.pop();
+        System.out.println(out);
+        Iterator it = this.scope.iterator();
 
+        while(it.hasNext()) {
+            System.out.println(it.next());
+        }
     }
 
     @Override
     public void enterMainClass(MiniJavaParser.MainClassContext ctx) {
-
+        this.scope.add(ctx.className.getText() + ctx.getStart().getLine() + " " + this.current.peek());
+        this.current.push(ctx.className.getText() + ctx.getStart().getLine());
     }
 
     @Override
     public void exitMainClass(MiniJavaParser.MainClassContext ctx) {
-
+        this.current.pop();
     }
 
     @Override
     public void enterMainMethod(MiniJavaParser.MainMethodContext ctx) {
-
+        this.scope.add("MainMethod" + ctx.getStart().getLine() + " " + this.current.peek());
+        this.current.push("MainMethod" + ctx.getStart().getLine());
     }
 
     @Override
     public void exitMainMethod(MiniJavaParser.MainMethodContext ctx) {
-
+//        String p = this.current.pop();
+//        System.out.println(p);
+//        this.current.push(p);
+        this.current.pop();
     }
 
     @Override
@@ -279,7 +206,7 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterIfElseStatement(MiniJavaParser.IfElseStatementContext ctx) {
-
+//        System.out.println(ctx.parent.toString() + "if");
     }
 
     @Override
@@ -329,7 +256,7 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterLocalVarDeclaration(MiniJavaParser.LocalVarDeclarationContext ctx) {
-
+//        System.out.println(ctx.parent.toString() + "state+++++++");
     }
 
     @Override
@@ -339,7 +266,7 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterExpressioncall(MiniJavaParser.ExpressioncallContext ctx) {
-
+//        System.out.println(ctx.parent.toString() + "func*****");
     }
 
     @Override

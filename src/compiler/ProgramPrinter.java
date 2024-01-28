@@ -6,62 +6,45 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.*;
 
 public class ProgramPrinter implements MiniJavaListener {
-//    private int test = 0;
-    Stack<String> current;
-    Queue<String> scope;
+    Stack<SymbolTable> currentScope;
+    Queue<SymbolTable> scope;
+
     public ProgramPrinter() {
-        this.current = new Stack<String>();
-        this.scope = new LinkedList<String>();
-        this.scope.peek();
+        this.current = new Stack<SymbolTable>();
+        this.scope = new LinkedList<SymbolTable>();
     }
 
     @Override
     public void enterProgram(MiniJavaParser.ProgramContext ctx) {
-//        System.out.println(ctx.invokingState);
-        this.current.push("program" + ctx.getStart().getLine());
-        this.scope.add("program" + ctx.getStart().getLine());
+
     }
 
     @Override
     public void exitProgram(MiniJavaParser.ProgramContext ctx) {
-        String out = this.current.pop();
-        System.out.println(out);
-        Iterator it = this.scope.iterator();
 
-        while(it.hasNext()) {
-            System.out.println(it.next());
-        }
     }
 
     @Override
     public void enterMainClass(MiniJavaParser.MainClassContext ctx) {
-        this.scope.add(ctx.className.getText() + ctx.getStart().getLine() + " " + this.current.peek());
-        this.current.push(ctx.className.getText() + ctx.getStart().getLine());
+
     }
 
     @Override
     public void exitMainClass(MiniJavaParser.MainClassContext ctx) {
-        this.current.pop();
+
     }
 
     @Override
     public void enterMainMethod(MiniJavaParser.MainMethodContext ctx) {
-        this.scope.add("MainMethod" + ctx.getStart().getLine() + " " + this.current.peek());
-        this.current.push("MainMethod" + ctx.getStart().getLine());
+
     }
 
     @Override
     public void exitMainMethod(MiniJavaParser.MainMethodContext ctx) {
-//        String p = this.current.pop();
-//        System.out.println(p);
-//        this.current.push(p);
-        this.current.pop();
+
     }
 
     @Override
@@ -206,7 +189,7 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterIfElseStatement(MiniJavaParser.IfElseStatementContext ctx) {
-//        System.out.println(ctx.parent.toString() + "if");
+
     }
 
     @Override
@@ -256,7 +239,7 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterLocalVarDeclaration(MiniJavaParser.LocalVarDeclarationContext ctx) {
-//        System.out.println(ctx.parent.toString() + "state+++++++");
+
     }
 
     @Override
@@ -266,7 +249,7 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterExpressioncall(MiniJavaParser.ExpressioncallContext ctx) {
-//        System.out.println(ctx.parent.toString() + "func*****");
+
     }
 
     @Override
@@ -532,5 +515,24 @@ public class ProgramPrinter implements MiniJavaListener {
     @Override
     public void exitEveryRule(ParserRuleContext parserRuleContext) {
 
+    }
+}
+
+
+class SymbolTable{
+    public String name;
+    public int id;
+    public int parentId;
+    public int line = 0;
+    public Map<String, SymbolTableEntry> symbolTable;
+    public SymbolTable(){
+        this.symbolTable = new LinkedHashMap<>();
+    }
+}
+
+class SymbolTableEntry{
+    public String name;
+    public SymbolTableEntry(String name){
+        this.name = name;
     }
 }

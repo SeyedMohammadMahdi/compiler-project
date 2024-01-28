@@ -88,6 +88,7 @@ public class ProgramPrinter implements MiniJavaListener {
     @Override
     public void enterClassDeclaration(MiniJavaParser.ClassDeclarationContext ctx) {
 //        created this line's Symbol table entry
+//        the variable i is for iterating over implemented Identifiers in class declaration
         int i = 1;
         String value = "Value = Class: (name: " + ctx.className.getText() + ")";
         if(ctx.inherits != null){
@@ -123,16 +124,50 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterInterfaceDeclaration(MiniJavaParser.InterfaceDeclarationContext ctx) {
+//        created this line's symbol table entry
+        String value = "Value = interface: (name: " + ctx.Identifier().getText() + ")" ;
+        String key = "Key = inteface_" + ctx.Identifier().getText();
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
 
+//        created this scope's Symbol table
+        String name = ctx.Identifier().getText();
+        int parentId = this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
     }
 
     @Override
     public void exitInterfaceDeclaration(MiniJavaParser.InterfaceDeclarationContext ctx) {
-
+        this.currentScope.pop();
     }
 
     @Override
     public void enterInterfaceMethodDeclaration(MiniJavaParser.InterfaceMethodDeclarationContext ctx) {
+//        created this line's symbol table entry
+        String key = "Key = method_" + ctx.Identifier().getText();
+        String value = "Value = Method: (name: " + ctx.Identifier().getText() + ") (returnType: " + ctx.returnType().getText() + ")";
+
+        try {
+            String modifier =  " (accessModifier: " + ctx.accessModifier().getText() + ")";
+            value += modifier;
+        }catch (Exception e){
+            value +=  " (accessModifier: private)";
+        }
+
+        try {
+            int i = 0;
+            int paramCount = ctx.parameterList().parameter().size();
+            value += " (parametersType: ";
+            for (;i < paramCount; i ++){
+                value += "[" + ctx.parameterList().parameter(i).type().getText() + ", " + "index: " + (i + 1 ) + "]";
+            }
+        } catch (Exception e) {}
+
+        SymbolTableEntry entry  = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
 
     }
 

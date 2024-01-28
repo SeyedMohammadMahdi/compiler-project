@@ -55,7 +55,7 @@ private void sayHi(number one, boolean two, Hi three, number four){
 }
 interface Face{
 final number[] a = {1,2};
-number getFace(number s);
+public number getFace(number a, number b);
 }
 interface MyFace{
 final String myFace= ":)";

@@ -1,4 +1,4 @@
-package gen;// Generated from /home/yosef/Projects/CompilerFinalProject/grammar/MiniJava.g4 by ANTLR 4.13.1
+package gen;// Generated from /home/mmnb/Desktop/CompilerFinalProject-main/grammar/MiniJava.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -349,7 +349,9 @@ public class MiniJavaParser extends Parser {
 	@SuppressWarnings("CheckReturnValue")
 	public static class ClassDeclarationContext extends ParserRuleContext {
 		public Token className;
+		public Token inherits;
 		public Token parentName;
+		public Token implements_;
 		public List<TerminalNode> Identifier() { return getTokens(MiniJavaParser.Identifier); }
 		public TerminalNode Identifier(int i) {
 			return getToken(MiniJavaParser.Identifier, i);
@@ -403,7 +405,7 @@ public class MiniJavaParser extends Parser {
 			if (_la==T__7) {
 				{
 				setState(77);
-				match(T__7);
+				((ClassDeclarationContext)_localctx).inherits = match(T__7);
 				setState(78);
 				((ClassDeclarationContext)_localctx).parentName = match(Identifier);
 				}
@@ -415,7 +417,7 @@ public class MiniJavaParser extends Parser {
 			if (_la==T__8) {
 				{
 				setState(81);
-				match(T__8);
+				((ClassDeclarationContext)_localctx).implements_ = match(T__8);
 				setState(82);
 				match(Identifier);
 				setState(87);

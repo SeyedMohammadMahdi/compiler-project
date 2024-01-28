@@ -1,4 +1,4 @@
-package gen;// Generated from /home/yosef/Projects/CompilerFinalProject/grammar/MiniJava.g4 by ANTLR 4.13.1
+package gen;// Generated from /home/mmnb/Desktop/CompilerFinalProject-main/grammar/MiniJava.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**

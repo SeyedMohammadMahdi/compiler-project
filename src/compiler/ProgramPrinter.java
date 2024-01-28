@@ -68,7 +68,7 @@ public class ProgramPrinter implements MiniJavaListener {
     public void enterMainMethod(MiniJavaParser.MainMethodContext ctx) {
 //        created this lines Symbol table entry
         String value = "Value = Method: (name: main) (returnType: void) (accessModifier: public) (parametersType: [array of [classType = String, isDefined = true] , index: 1] )";
-        String key = "method_main";
+        String key = "Key = method_main";
         SymbolTableEntry entry = new SymbolTableEntry(key, value);
         this.currentScope.peek().symbolTable.put(key, entry);
 //        created this scopes Symbol table
@@ -87,12 +87,38 @@ public class ProgramPrinter implements MiniJavaListener {
 
     @Override
     public void enterClassDeclaration(MiniJavaParser.ClassDeclarationContext ctx) {
+//        created this line's Symbol table entry
+        int i = 1;
+        String value = "Value = Class: (name: " + ctx.className.getText() + ")";
+        if(ctx.inherits != null){
+            value += " (extends: " + ctx.Identifier(i++).getText() + ")";
+        }
 
+        if(ctx.implements_ != null){
+            value += " (implements: ";
+
+            for (;i < ctx.Identifier().size(); i++){
+                value += ctx.Identifier(i).getText();
+                value += ", ";
+            }
+            value += ")";
+        }
+        String key = "Key = class_" + ctx.className.getText();
+        SymbolTableEntry entry = new SymbolTableEntry(key, value);
+        this.currentScope.peek().symbolTable.put(key, entry);
+
+//        created this scopes Symbol table
+        String name = "Class_" + ctx.className.getText();
+        int parentId = this.currentScope.peek().id;
+        int line = ctx.getStart().getLine();
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
+        this.currentScope.push(table);
+        this.scopes.add(table);
     }
 
     @Override
     public void exitClassDeclaration(MiniJavaParser.ClassDeclarationContext ctx) {
-
+        this.currentScope.pop();
     }
 
     @Override
@@ -585,7 +611,7 @@ class SymbolTable{
                 entry.getValue().print();
             }
         }
-        System.out.println("--------------------------------------------------------");
+        System.out.println("--------------------------------------------------------\n");
 
     }
 }

@@ -135,7 +135,7 @@ public class ProgramPrinter implements MiniJavaListener {
         String name = "interface_" + ctx.Identifier().getText();
         int parentId = this.currentScope.peek().id;
         int line = ctx.getStart().getLine();
-        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
     }
@@ -178,7 +178,7 @@ public class ProgramPrinter implements MiniJavaListener {
         String name = "interface_method_" + ctx.Identifier().getText();
         int parentId = this.currentScope.peek().id;
         int line =ctx.getStart().getLine();
-        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
 
@@ -282,7 +282,7 @@ public class ProgramPrinter implements MiniJavaListener {
         String name = "method_" + ctx.Identifier().getText();
         int parentId = this.currentScope.peek().id;
         int line = ctx.getStart().getLine();
-        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
     }
@@ -474,7 +474,7 @@ public class ProgramPrinter implements MiniJavaListener {
             name = "if";
         }
 
-        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
         this.nested++;
@@ -498,7 +498,7 @@ public class ProgramPrinter implements MiniJavaListener {
             name = "else";
         }
 
-        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
         this.nested++;
@@ -522,7 +522,7 @@ public class ProgramPrinter implements MiniJavaListener {
             name = "while";
         }
 
-        SymbolTable table = new SymbolTable(name, id, parentId, line);
+        SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
         this.nested++;

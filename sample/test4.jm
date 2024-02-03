@@ -13,12 +13,22 @@ print(b.set(3));
 }
 }
 
-class Rest {
+class Rest inherits Base {
 }
-class Base inherits Derived {
+class Base inherits Derived implements test, best{
 
 }
 
 class Derived inherits Rest {
 
+}
+
+interface test{
+final number[] a = {1,2};
+number getFace(number te);
+}
+
+interface best{
+final number[] a = {1,2};
+number getace(number te);
 }

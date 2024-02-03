@@ -13,6 +13,10 @@ public class ProgramPrinter implements MiniJavaListener {
     Queue<SymbolTable> scopes;
     Map<String,String> circle;
     List<String> errors;
+    ClassInfo currentClass;
+    List<ClassInfo> classes;
+    Map<String, List<String>> interfaceMethods;
+    String currentInterface;
     int nested = 0;
     int id = 0;
 
@@ -21,6 +25,8 @@ public class ProgramPrinter implements MiniJavaListener {
         this.scopes = new LinkedList<SymbolTable>();
         this.circle = new LinkedHashMap<>();
         this.errors = new ArrayList<>();
+        this.interfaceMethods = new LinkedHashMap<>();
+        this.classes = new ArrayList<>();
     }
 
     private void printResult() {
@@ -30,6 +36,12 @@ public class ProgramPrinter implements MiniJavaListener {
 
         for(String s: this.errors) {
             System.out.println(s);
+        }
+
+        for (ClassInfo aClass : this.classes) {
+            if (aClass.hasImplementError(this.interfaceMethods)) {
+                System.out.println("Error: [" + aClass.line + ":" + aClass.column + "] class [" + aClass.name + "] must implement all abstract methods");
+            }
         }
     }
 
@@ -120,7 +132,7 @@ public class ProgramPrinter implements MiniJavaListener {
             this.circle.put(className, extend);
             String err = this.hasCircle(className);
             if(err != null) {
-                String error = "Error " + ctx.getStart().getLine() + ":" + (ctx.inherits.getCharPositionInLine()) + " " + err;
+                String error = "Error: Invalid Inheritance: [" + ctx.getStart().getLine() + ":" + (ctx.inherits.getCharPositionInLine()) + "] " + err;
                 this.errors.add(error);
             }
         }
@@ -128,8 +140,11 @@ public class ProgramPrinter implements MiniJavaListener {
         if(ctx.implements_ != null){
             value += " (implements: ";
 
+            this.currentClass = new ClassInfo(ctx.className.getText(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+
             for (;i < ctx.Identifier().size(); i++){
                 value += ctx.Identifier(i).getText();
+                this.currentClass.implementings.add(ctx.Identifier(i).getText());
                 value += ", ";
             }
             value += ")";
@@ -150,6 +165,9 @@ public class ProgramPrinter implements MiniJavaListener {
     @Override
     public void exitClassDeclaration(MiniJavaParser.ClassDeclarationContext ctx) {
         this.currentScope.pop();
+        if(ctx.implements_ != null){
+            this.classes.add(this.currentClass);
+        }
     }
 
     @Override
@@ -167,6 +185,9 @@ public class ProgramPrinter implements MiniJavaListener {
         SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
+
+        this.currentInterface = ctx.Identifier().getText();
+        this.interfaceMethods.put(this.currentInterface, new ArrayList<>());
     }
 
     @Override
@@ -210,6 +231,8 @@ public class ProgramPrinter implements MiniJavaListener {
         SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
+
+        this.interfaceMethods.get(this.currentInterface).add(ctx.Identifier().getText());
 
     }
 
@@ -289,7 +312,7 @@ public class ProgramPrinter implements MiniJavaListener {
         if(ctx.accessModifier() != null){
             value += " (accessModifier: " + ctx.accessModifier().getText();
         }
-
+        this.currentClass.methods.add(ctx.Identifier().getText());
         if(ctx.parameterList() != null){
             int i = 0;
             int paramCount = ctx.parameterList().parameter().size();
@@ -839,5 +862,34 @@ class SymbolTableEntry{
     public void print(){
         System.out.print(key + "\t|\t");
         System.out.println(value);
+    }
+}
+
+class ClassInfo{
+    String name;
+    int line;
+    int column;
+    List<String> methods;
+    List<String> implementings;
+
+    ClassInfo(String name, int line, int column){
+        this.name = name;
+        this.line = line;
+        this.column = column;
+        this.methods = new ArrayList<>();
+        this.implementings = new ArrayList<>();
+    }
+
+    boolean hasImplementError(Map<String, List<String>> interfaces){
+        for (String imp : this.implementings){
+            if(interfaces.containsKey(imp)){
+                for (String method : interfaces.get(imp)){
+                    if(!this.methods.contains(method)){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

@@ -15,7 +15,7 @@ public class ProgramPrinter implements MiniJavaListener {
     List<String> errors;
     ClassInfo currentClass;
     List<ClassInfo> classes;
-    Map<String, List<String>> interfaceMethods;
+    Map<String, Map<String, String>> interfaceMethods;
     String currentInterface;
     int nested = 0;
     int id = 0;
@@ -39,21 +39,28 @@ public class ProgramPrinter implements MiniJavaListener {
         }
 
         for (ClassInfo aClass : this.classes) {
-            if (aClass.hasImplementError(this.interfaceMethods)) {
-                System.out.println("Error: [" + aClass.line + ":" + aClass.column + "] class [" + aClass.name + "] must implement all abstract methods");
+            aClass.hasError(this.interfaceMethods);
+            String err;
+            if (aClass.inheritanceErr) {
+                err = "Error: [" + aClass.line + ":" + aClass.column + "] class [" + aClass.name + "] must implement all abstract methods";
+                this.errors.add(err);
+                System.out.println(err);
+            }
+            if(aClass.accessErr) {
+                err = "Error: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
+                this.errors.add(err);
+                System.out.println(err);
             }
         }
     }
 
     private String hasCircle(String init){
-        boolean hasCircle = false;
         String b = init;
         String circ = "[" + init + "]";
         while(this.circle.containsKey(b)){
             b = this.circle.get(b);
             circ += " -> [" + b + "]";
             if(init.equals(b)){
-                hasCircle = true;
                 return  circ;
             }
         }
@@ -187,7 +194,7 @@ public class ProgramPrinter implements MiniJavaListener {
         this.scopes.add(table);
 
         this.currentInterface = ctx.Identifier().getText();
-        this.interfaceMethods.put(this.currentInterface, new ArrayList<>());
+        this.interfaceMethods.put(this.currentInterface, new LinkedHashMap<>());
     }
 
     @Override
@@ -231,8 +238,11 @@ public class ProgramPrinter implements MiniJavaListener {
         SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
-
-        this.interfaceMethods.get(this.currentInterface).add(ctx.Identifier().getText());
+        String accessModif = "";
+        if(ctx.accessModifier() != null){
+            accessModif = ctx.accessModifier().getText();
+        }
+        this.interfaceMethods.get(this.currentInterface).put(ctx.Identifier().getText(), accessModif);
 
     }
 
@@ -309,10 +319,12 @@ public class ProgramPrinter implements MiniJavaListener {
 //        created this line's Symbol table entry
         String key = "Key = mehtod_" + ctx.Identifier().getText();
         String value = "Value = Method: (name: " + ctx.Identifier().getText() + ") (returnType: " + ctx.returnType().getText() + ")";
+        String accessModif = "";
         if(ctx.accessModifier() != null){
-            value += " (accessModifier: " + ctx.accessModifier().getText();
+            accessModif = ctx.accessModifier().getText();
+            value += " (accessModifier: " + accessModif;
         }
-        this.currentClass.methods.add(ctx.Identifier().getText());
+
         if(ctx.parameterList() != null){
             int i = 0;
             int paramCount = ctx.parameterList().parameter().size();
@@ -337,6 +349,10 @@ public class ProgramPrinter implements MiniJavaListener {
         SymbolTable table = new SymbolTable(name, id++, parentId, line);
         this.currentScope.push(table);
         this.scopes.add(table);
+
+        this.currentClass.methods.put(ctx.Identifier().getText(), accessModif);
+        this.currentClass.methodsLine.put(ctx.Identifier().getText(), ctx.getStart().getLine());
+        this.currentClass.methodsCol.put(ctx.Identifier().getText(), ctx.getStart().getCharPositionInLine());
     }
 
     @Override
@@ -869,27 +885,43 @@ class ClassInfo{
     String name;
     int line;
     int column;
-    List<String> methods;
+    Map<String, String> methods;
+    Map<String, Integer> methodsLine;
+    Map<String, Integer> methodsCol;
     List<String> implementings;
-
+    int accessErrLine;
+    int accessErrCol;
+    boolean inheritanceErr = false;
+    boolean accessErr = false;
+    String errMethodName;
     ClassInfo(String name, int line, int column){
         this.name = name;
         this.line = line;
         this.column = column;
-        this.methods = new ArrayList<>();
+        this.methods = new LinkedHashMap<>();
+        this.methodsLine = new LinkedHashMap<>();
+        this.methodsCol = new LinkedHashMap<>();
         this.implementings = new ArrayList<>();
     }
 
-    boolean hasImplementError(Map<String, List<String>> interfaces){
+    void hasError(Map<String, Map<String, String>> interfaces){
         for (String imp : this.implementings){
             if(interfaces.containsKey(imp)){
-                for (String method : interfaces.get(imp)){
-                    if(!this.methods.contains(method)){
-                        return true;
+//                Iterator it = interfaces.get(imp).it
+                for (Map.Entry<String, String> method : interfaces.get(imp).entrySet()){
+                    if(!this.methods.containsKey(method.getKey())){
+                        this.inheritanceErr =  true;
+                    }
+                    else if(!this.accessErr){
+                        if(this.methods.get(method.getKey()).equals("private") && (method.getValue().equals("public") || method.getValue().isEmpty())){
+                            this.accessErr = true;
+                            this.accessErrLine = this.methodsLine.get(method.getKey());
+                            this.accessErrCol = this.methodsCol.get(method.getKey());
+                            this.errMethodName = method.getKey();
+                        }
                     }
                 }
             }
         }
-        return false;
     }
 }

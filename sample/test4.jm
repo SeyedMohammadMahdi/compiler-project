@@ -16,7 +16,7 @@ print(b.set(3));
 class Rest inherits Base {
 }
 class Base inherits Derived implements test, best{
-
+    private number getFace(number te);
 }
 
 class Derived inherits Rest {
@@ -25,7 +25,7 @@ class Derived inherits Rest {
 
 interface test{
 final number[] a = {1,2};
-number getFace(number te);
+public number getFace(number te);
 }
 
 interface best{

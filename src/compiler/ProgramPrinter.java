@@ -11,20 +11,41 @@ import java.util.*;
 public class ProgramPrinter implements MiniJavaListener {
     Stack<SymbolTable> currentScope;
     Queue<SymbolTable> scopes;
+    Map<String,String> circle;
+    List<String> errors;
     int nested = 0;
     int id = 0;
 
     public ProgramPrinter() {
         this.currentScope = new Stack<SymbolTable>();
         this.scopes = new LinkedList<SymbolTable>();
+        this.circle = new LinkedHashMap<>();
+        this.errors = new ArrayList<>();
     }
 
     private void printResult() {
-        Iterator it = this.scopes.iterator();
-        while (it.hasNext()){
-            SymbolTable s = ((SymbolTable)it.next());
+        for (SymbolTable s : this.scopes) {
             s.print();
         }
+
+        for(String s: this.errors) {
+            System.out.println(s);
+        }
+    }
+
+    private String hasCircle(String init){
+        boolean hasCircle = false;
+        String b = init;
+        String circ = "[" + init + "]";
+        while(this.circle.containsKey(b)){
+            b = this.circle.get(b);
+            circ += " -> [" + b + "]";
+            if(init.equals(b)){
+                hasCircle = true;
+                return  circ;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -94,6 +115,14 @@ public class ProgramPrinter implements MiniJavaListener {
         String value = "Value = Class: (name: " + ctx.className.getText() + ")";
         if(ctx.inherits != null){
             value += " (extends: " + ctx.Identifier(i++).getText() + ")";
+            String className = ctx.className.getText();
+            String extend = ctx.Identifier(i - 1).getText();
+            this.circle.put(className, extend);
+            String err = this.hasCircle(className);
+            if(err != null) {
+                String error = "Error " + ctx.getStart().getLine() + ":" + (ctx.inherits.getCharPositionInLine()) + " " + err;
+                this.errors.add(error);
+            }
         }
 
         if(ctx.implements_ != null){

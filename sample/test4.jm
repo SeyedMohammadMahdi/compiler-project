@@ -1,0 +1,24 @@
+class Classes {
+public static void main(String[] args) {
+Base b;
+Derived d;
+number x;
+b = new Base();
+d = new Derived();
+{
+b = d;
+}
+print(b.set(1));
+print(b.set(3));
+}
+}
+
+class Rest {
+}
+class Base inherits Derived {
+
+}
+
+class Derived inherits Rest {
+
+}

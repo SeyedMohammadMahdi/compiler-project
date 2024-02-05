@@ -13,16 +13,17 @@ import java.io.IOException;
 
 public class Compiler {
     public static void main(String[] args) throws IOException  {
-        CharStream stream = CharStreams.fromFileName("./sample/test4.jm");
+        CharStream stream = CharStreams.fromFileName("./sample/test5.jm");
         MiniJavaLexer lexer = new MiniJavaLexer(stream);
         TokenStream tokens = new CommonTokenStream(lexer);
         MiniJavaParser parser = new MiniJavaParser(tokens);
         parser.setBuildParseTree(true);
         ParseTree tree = parser.program();
         ParseTreeWalker walker = new ParseTreeWalker();
-        MiniJavaListener listener = new ProgramPrinter();
+        MiniJavaListener listener = new ProgramOptimizer();
 
         walker.walk(listener, tree);
-
+        // First walk to update tables and second for generate new code
+        walker.walk(listener, tree);
     }
 }

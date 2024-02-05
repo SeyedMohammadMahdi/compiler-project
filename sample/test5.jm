@@ -49,7 +49,7 @@ class Classes {
                 print(b);
             }
             while(0){
-                num lo;
+                number lo;
             }
             print(x);
         }
@@ -66,5 +66,16 @@ class Classes {
             }
         }
     }
+}
+
+class Pikachu inherits Pokemon {
+@Override
+public number damage() {
+if(<>(health < 2)) {
+health = health - 2;
+}
+print("new health");
+ret health;
+}
 }
 

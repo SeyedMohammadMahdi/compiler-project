@@ -103,7 +103,21 @@ public class ProgramConverter implements MiniJavaListener {
         if (expressionNode.start.getText().equals("new")){
             return expressionNode.getText().replace("new", "new ")  ;
         }else if(expressionNode instanceof MiniJavaParser.NotExpressionContext){
-            return expressionNode.getText().replace("<>", "!");
+            return "! " + getExpression(((MiniJavaParser.NotExpressionContext) expressionNode).expression());
+        }else if(expressionNode instanceof MiniJavaParser.PowExpressionContext){
+            return "Math.pow( " + getExpression(((MiniJavaParser.PowExpressionContext) expressionNode).expression(0))+ " , " + getExpression(((MiniJavaParser.PowExpressionContext) expressionNode).expression(1)) + " )" ;
+        }else if(expressionNode instanceof MiniJavaParser.AddExpressionContext) {
+            return getExpression(((MiniJavaParser.AddExpressionContext) expressionNode).expression(0)) + " + " + getExpression(((MiniJavaParser.AddExpressionContext) expressionNode).expression(1))  ;
+        }else if(expressionNode instanceof MiniJavaParser.SubExpressionContext) {
+            return getExpression(((MiniJavaParser.SubExpressionContext) expressionNode).expression(0)) + " - " + getExpression(((MiniJavaParser.SubExpressionContext) expressionNode).expression(1)) ;
+        }else if(expressionNode instanceof MiniJavaParser.MulExpressionContext) {
+            return getExpression(((MiniJavaParser.MulExpressionContext) expressionNode).expression(0)) + " * " + getExpression(((MiniJavaParser.MulExpressionContext) expressionNode).expression(1)) ;
+        }else if(expressionNode instanceof MiniJavaParser.ParenExpressionContext) {
+            return "(" +  getExpression(((MiniJavaParser.ParenExpressionContext) expressionNode).expression()) + ")";
+        }else if(expressionNode instanceof MiniJavaParser.AndExpressionContext) {
+            return getExpression(((MiniJavaParser.AndExpressionContext) expressionNode).expression(0)) + " && " + getExpression(((MiniJavaParser.AndExpressionContext) expressionNode).expression(1)) ;
+        }else if(expressionNode instanceof MiniJavaParser.LtExpressionContext) {
+            return getExpression(((MiniJavaParser.LtExpressionContext) expressionNode).expression(0)) + " < " + getExpression(((MiniJavaParser.LtExpressionContext) expressionNode).expression(1)) ;
         }else {
             return expressionNode.getText();
         }
@@ -250,7 +264,7 @@ public class ProgramConverter implements MiniJavaListener {
     @Override
     public void exitMethodDeclaration(MiniJavaParser.MethodDeclarationContext ctx) {
         if (ctx.methodBody().RETURN() != null)
-            System.out.println("\t\treturn " + ctx.methodBody().expression().getText() + ";");
+            System.out.println("\t\treturn " + getExpression(ctx.methodBody().expression()) + ";");
         System.out.print("\t}\n");
         indent_level -= 1;
     }
@@ -390,7 +404,7 @@ public class ProgramConverter implements MiniJavaListener {
     @Override
     public void enterPrintStatement(MiniJavaParser.PrintStatementContext ctx) {
         tabPrint(indent_level);
-        String str = "System.out.println ( " + ctx.expression().getText() + " );" ;
+        String str = "System.out.println ( " + getExpression(ctx.expression()) + " );" ;
         System.out.println(str);
     }
 

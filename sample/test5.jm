@@ -1,0 +1,70 @@
+class Classes {
+    public static void main(String[] args) {
+        number x;
+        number y;
+        number z;
+        number t;
+        Base base;
+        x = (x * y) + (x - y);
+        y = (2**3) + (3**2);
+
+        if (false){
+            while(x){
+                print(x);
+            }
+        }
+
+        if (true){
+            number b;
+            number c;
+            number b2;
+            b2 = b**2;
+            while(1){
+                print(1);
+            }
+        }
+
+        if (false){
+            while(x){
+                print(x);
+            }
+        }
+        print(x);
+        while (0){
+            if (x){
+                number o1;
+                o1 = o1 + 2;
+            }
+        }
+
+        while (1){
+            if (false){
+                number s;
+            }
+            print(f);
+        }
+
+        if (b){
+            if(false){
+                print(b);
+            }
+            while(0){
+                num lo;
+            }
+            print(x);
+        }
+
+        if(false){
+            print(b);
+        }else{
+            print(b);
+
+            if (n){
+                print(1);
+            }else{
+                number y;
+            }
+        }
+    }
+}
+

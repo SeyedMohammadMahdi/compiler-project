@@ -677,8 +677,17 @@ public class ProgramOptimizer implements MiniJavaListener {
 
     @Override
     public void enterExpressioncall(MiniJavaParser.ExpressioncallContext ctx) {
-        if (! print_enable)
+        if (! print_enable) {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(), new ArrayList<String>()));
+        }else{
+            int constantFoldingValue = constantFolding(ctx.expression());
+            if (constantFoldingValue == Integer.MAX_VALUE){
+                printTree(ctx, ";");
+            }else {
+                tabPrint(indent_level);
+                System.out.println(constantFoldingValue + " ;");
+            }
+        }
     }
 
     @Override

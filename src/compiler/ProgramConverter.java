@@ -100,8 +100,31 @@ public class ProgramConverter implements MiniJavaListener {
     }
 
     private String getExpression(MiniJavaParser.ExpressionContext expressionNode){
-        if (expressionNode.start.getText().equals("new")){
-            return expressionNode.getText().replace("new", "new ")  ;
+        if (expressionNode instanceof MiniJavaParser.ArrayInstantiationExpressionContext){
+            String t = expressionNode.getChild(1).getText();
+            if (t.equals("number")){
+                t = "int";
+            }
+            return "new " + t + "[ " + getExpression(((MiniJavaParser.ArrayInstantiationExpressionContext) expressionNode).expression()) + "]" ;
+        }else if(expressionNode instanceof MiniJavaParser.ObjectInstantiationExpressionContext){
+            return expressionNode.getText().replace("new", "new ");
+        }else if(expressionNode instanceof MiniJavaParser.ArrayAccessExpressionContext){
+            return getExpression(((MiniJavaParser.ArrayAccessExpressionContext) expressionNode).expression(0)) + "[" + getExpression(((MiniJavaParser.ArrayAccessExpressionContext) expressionNode).expression(1)) + "]";
+        }else if(expressionNode instanceof MiniJavaParser.ArrayLengthExpressionContext){
+            return getExpression(((MiniJavaParser.ArrayLengthExpressionContext) expressionNode).expression()) + ((MiniJavaParser.ArrayLengthExpressionContext) expressionNode).DOTLENGTH();
+        }else if(expressionNode instanceof MiniJavaParser.MethodCallExpressionContext){
+            String s = ((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression(0).getText() + '.' + ((MiniJavaParser.MethodCallExpressionContext) expressionNode).Identifier().getText() + "(";
+            for (int i=1; i<((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression().size(); i++){
+                s = s.concat(getExpression(((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression(i)));
+                if (i!=((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression().size()-1){
+                    s = s.concat(", ");
+                }else{
+                    s = s.concat(")");
+                }
+            }
+            return s;
+        }else if(expressionNode instanceof MiniJavaParser.FieldCallExpressionContext){
+            return getExpression(expressionNode) + "." + ((MiniJavaParser.FieldCallExpressionContext) expressionNode).Identifier() ;
         }else if(expressionNode instanceof MiniJavaParser.NotExpressionContext){
             return "! " + getExpression(((MiniJavaParser.NotExpressionContext) expressionNode).expression());
         }else if(expressionNode instanceof MiniJavaParser.PowExpressionContext){

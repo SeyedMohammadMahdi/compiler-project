@@ -108,7 +108,7 @@ public class ProgramOptimizer implements MiniJavaListener {
             }else if(child instanceof MiniJavaParser.MethodCallExpressionContext){
                 usedVars.add(child.getChild(0).getText());
                 for (int j = 0; j < ((MiniJavaParser.MethodCallExpressionContext) child).expression().size(); j++){
-                    usedVars = (ArrayList<String>) getExpressionUsedVariables(((MiniJavaParser.MethodCallExpressionContext) child).expression().get(i), usedVars).clone();
+                    usedVars = (ArrayList<String>) getExpressionUsedVariables(((MiniJavaParser.MethodCallExpressionContext) child).expression().get(j), usedVars).clone();
                 }
             }else if(child instanceof MiniJavaParser.FieldCallExpressionContext){
                 usedVars.add(child.getChild(0).getText());
@@ -206,6 +206,58 @@ public class ProgramOptimizer implements MiniJavaListener {
         }
         // Return Integer.MIN_VALUE for unsupported operations
         return Integer.MIN_VALUE;
+    }
+
+    private String getFolded(MiniJavaParser.ExpressionContext expressionNode){
+        int constantFoldingValue = constantFolding(expressionNode);
+        if (constantFoldingValue == Integer.MAX_VALUE){
+            return getSubTree(expressionNode, expressionNode.getChild(expressionNode.getChildCount()-1).getText());
+        }else{
+            return String.valueOf(constantFoldingValue);
+        }
+    }
+
+    private String getExpression(MiniJavaParser.ExpressionContext expressionNode) {
+        if (expressionNode instanceof MiniJavaParser.ArrayInstantiationExpressionContext) {
+            return getSubTree(expressionNode, "[") + getExpression(((MiniJavaParser.ArrayInstantiationExpressionContext) expressionNode).expression()) + "]" ;
+        } else if (expressionNode instanceof MiniJavaParser.ObjectInstantiationExpressionContext) {
+            return expressionNode.getText().replace("new", "new ");
+        } else if (expressionNode instanceof MiniJavaParser.ArrayAccessExpressionContext) {
+            return getExpression(((MiniJavaParser.ArrayAccessExpressionContext) expressionNode).expression(0)) + "[" + getExpression(((MiniJavaParser.ArrayAccessExpressionContext) expressionNode).expression(1)) + "]";
+        } else if (expressionNode instanceof MiniJavaParser.ArrayLengthExpressionContext) {
+            return getExpression(((MiniJavaParser.ArrayLengthExpressionContext) expressionNode).expression()) + ((MiniJavaParser.ArrayLengthExpressionContext) expressionNode).DOTLENGTH();
+        } else if (expressionNode instanceof MiniJavaParser.MethodCallExpressionContext) {
+            String s = ((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression(0).getText() + '.' + ((MiniJavaParser.MethodCallExpressionContext) expressionNode).Identifier().getText() + "(";
+            for (int i = 1; i < ((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression().size(); i++) {
+                s = s.concat(getExpression(((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression(i)));
+                if (i != ((MiniJavaParser.MethodCallExpressionContext) expressionNode).expression().size() - 1) {
+                    s = s.concat(", ");
+                } else {
+                    s = s.concat(")");
+                }
+            }
+            return s;
+        } else if (expressionNode instanceof MiniJavaParser.FieldCallExpressionContext) {
+            return getExpression(expressionNode) + "." + ((MiniJavaParser.FieldCallExpressionContext) expressionNode).Identifier();
+        } else if (expressionNode instanceof MiniJavaParser.NotExpressionContext) {
+            return getFolded(expressionNode);
+        } else if (expressionNode instanceof MiniJavaParser.PowExpressionContext) {
+            return getFolded(expressionNode);
+        } else if (expressionNode instanceof MiniJavaParser.AddExpressionContext) {
+            return getFolded(expressionNode);
+        } else if (expressionNode instanceof MiniJavaParser.SubExpressionContext) {
+            return getFolded(expressionNode);
+        } else if (expressionNode instanceof MiniJavaParser.MulExpressionContext) {
+            return getFolded(expressionNode);
+        } else if (expressionNode instanceof MiniJavaParser.ParenExpressionContext) {
+            return "(" + getExpression(((MiniJavaParser.ParenExpressionContext) expressionNode).expression()) + ")";
+        } else if (expressionNode instanceof MiniJavaParser.AndExpressionContext) {
+            return getFolded(expressionNode);
+        } else if (expressionNode instanceof MiniJavaParser.LtExpressionContext) {
+            return getFolded(expressionNode);
+        } else {
+            return expressionNode.getText();
+        }
     }
 
     @Override
@@ -356,13 +408,14 @@ public class ProgramOptimizer implements MiniJavaListener {
         if (print_enable && !block_print_disable) {
             if ((currentScope.peek().symbolTable.containsKey(key) && currentScope.peek().symbolTable.get(key).value) || currentScope.peek().name.contains("interface")){
                 if (ctx.expression() != null) {
-                    int constantFoldingResult = constantFolding(ctx.expression());
-                    if (constantFoldingResult == Integer.MAX_VALUE) {
-                        printTree(ctx, ";");
-                    } else {
-                        tabPrint(indent_level);
-                        System.out.println(getSubTree(ctx, "=") + constantFoldingResult + " ;");
-                    }
+//                    int constantFoldingResult = constantFolding(ctx.expression());
+//                    if (constantFoldingResult == Integer.MAX_VALUE) {
+//                        printTree(ctx, ";");
+//                    } else {
+//                        tabPrint(indent_level);
+//                        System.out.println(getSubTree(ctx, "=") + constantFoldingResult + " ;");
+//                    }
+                    System.out.println(getSubTree(ctx, "=") + getExpression(ctx.expression()) + " ;");
                 }else{
                     printTree(ctx, ";");
                 }
@@ -422,15 +475,17 @@ public class ProgramOptimizer implements MiniJavaListener {
             setVariablesSeen(getExpressionUsedVariables(ctx.methodBody().expression(), new ArrayList<String>()));
         }else{
             if (ctx.methodBody().expression() != null) {
-                int constantFoldingResult = constantFolding(ctx.methodBody().expression());
-                if (constantFoldingResult == Integer.MAX_VALUE) {
-                    tabPrint(indent_level);
-                    System.out.println("ret " + ctx.methodBody().expression().getText() + " ;");
-
-                } else {
-                    tabPrint(indent_level);
-                    System.out.println("ret " + constantFoldingResult + " ;");
-                }
+//                int constantFoldingResult = constantFolding(ctx.methodBody().expression());
+//                if (constantFoldingResult == Integer.MAX_VALUE) {
+//                    tabPrint(indent_level);
+//                    System.out.println("ret " + ctx.methodBody().expression().getText() + " ;");
+//
+//                } else {
+//                    tabPrint(indent_level);
+//                    System.out.println("ret " + constantFoldingResult + " ;");
+//                }
+                tabPrint(indent_level);
+                System.out.println("ret " + getExpression(ctx.methodBody().expression()) + " ;");
             }
             indent_level -= 1;
             tabPrint(indent_level);
@@ -538,24 +593,33 @@ public class ProgramOptimizer implements MiniJavaListener {
     @Override
     public void enterIfElseStatement(MiniJavaParser.IfElseStatementContext ctx) {
         if (print_enable && !block_print_disable){
-            int constantFoldingResult = constantFolding(ctx.expression());
-            if (constantFoldingResult == Integer.MAX_VALUE) {
-                if (ctx.expression().getText().equals("false")) {
-                    block_print_disable = true;
-                    disable_block_id = currentScope.peek().id ;
-                    if_condition = getSubTree(ctx, ")");
-                }else {
-                    printTree(ctx, ")");
-                }
-            } else {
-                if (constantFoldingResult == 0) {
-                    block_print_disable = true;
-                    disable_block_id = currentScope.peek().id ;
-                    if_condition = getSubTree(ctx, ")");
-                }else {
-                    tabPrint(indent_level);
-                    System.out.println(getSubTree(ctx, "( ") + constantFoldingResult + " )");
-                }
+//            int constantFoldingResult = constantFolding(ctx.expression());
+//            if (constantFoldingResult == Integer.MAX_VALUE) {
+//                if (ctx.expression().getText().equals("false")) {
+//                    block_print_disable = true;
+//                    disable_block_id = currentScope.peek().id ;
+//                    if_condition = getSubTree(ctx, ")");
+//                }else {
+//                    printTree(ctx, ")");
+//                }
+//            } else {
+//                if (constantFoldingResult == 0) {
+//                    block_print_disable = true;
+//                    disable_block_id = currentScope.peek().id ;
+//                    if_condition = getSubTree(ctx, ")");
+//                }else {
+//                    tabPrint(indent_level);
+//                    System.out.println(getSubTree(ctx, "( ") + constantFoldingResult + " )");
+//                }
+//            }
+            String exp = getExpression(ctx.expression());
+            if (exp.equals("false") || exp.equals("0")){
+                block_print_disable = true;
+                disable_block_id = currentScope.peek().id ;
+                if_condition = getSubTree(ctx, ")");
+            }else{
+                tabPrint(indent_level);
+                System.out.println(getSubTree(ctx, "(") + exp + " )");
             }
         }else {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(), new ArrayList<String>()));
@@ -570,22 +634,31 @@ public class ProgramOptimizer implements MiniJavaListener {
     @Override
     public void enterWhileStatement(MiniJavaParser.WhileStatementContext ctx) {
         if (print_enable && !block_print_disable){
-            int constantFoldingResult = constantFolding(ctx.expression());
-            if (constantFoldingResult == Integer.MAX_VALUE) {
-                if (ctx.expression().getText().equals("false")){
-                    block_print_disable = true;
-                    disable_block_id = this.currentScope.peek().id ;
-                }else {
-                    printTree(ctx, ")");
-                }
-            } else {
-                if (constantFoldingResult == 0){
-                    block_print_disable = true;
-                    disable_block_id = this.currentScope.peek().id ;
-                }else {
-                    tabPrint(indent_level);
-                    System.out.println(getSubTree(ctx, "(") + constantFoldingResult + " )");
-                }
+//            int constantFoldingResult = constantFolding(ctx.expression());
+//            if (constantFoldingResult == Integer.MAX_VALUE) {
+//                if (ctx.expression().getText().equals("false")){
+//                    block_print_disable = true;
+//                    disable_block_id = this.currentScope.peek().id ;
+//                }else {
+//                    printTree(ctx, ")");
+//                }
+//            } else {
+//                if (constantFoldingResult == 0){
+//                    block_print_disable = true;
+//                    disable_block_id = this.currentScope.peek().id ;
+//                }else {
+//                    tabPrint(indent_level);
+//                    System.out.println(getSubTree(ctx, "(") + constantFoldingResult + " )");
+//                }
+//            }
+            String exp = getExpression(ctx.expression());
+            if (exp.equals("false") || exp.equals("0")){
+                block_print_disable = true;
+                disable_block_id = currentScope.peek().id ;
+                if_condition = getSubTree(ctx, ")");
+            }else{
+                tabPrint(indent_level);
+                System.out.println(getSubTree(ctx, "(") + exp + " )");
             }
         }else {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(), new ArrayList<String>()));
@@ -600,13 +673,15 @@ public class ProgramOptimizer implements MiniJavaListener {
     @Override
     public void enterPrintStatement(MiniJavaParser.PrintStatementContext ctx) {
         if (print_enable && !block_print_disable){
-            int constantFoldingResult = constantFolding(ctx.expression());
-            if (constantFoldingResult == Integer.MAX_VALUE) {
-                printTree(ctx, ";");
-            } else {
-                tabPrint(indent_level);
-                System.out.println(getSubTree(ctx, "(") + constantFoldingResult + " ) ;");
-            }
+//            int constantFoldingResult = constantFolding(ctx.expression());
+//            if (constantFoldingResult == Integer.MAX_VALUE) {
+//                printTree(ctx, ";");
+//            } else {
+//                tabPrint(indent_level);
+//                System.out.println(getSubTree(ctx, "(") + constantFoldingResult + " ) ;");
+//            }
+            tabPrint(indent_level);
+            System.out.println(getSubTree(ctx, "(") + getExpression(ctx.expression()) + " ) ;");
         }else {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(), new ArrayList<String>()));
         }
@@ -620,13 +695,15 @@ public class ProgramOptimizer implements MiniJavaListener {
     @Override
     public void enterVariableAssignmentStatement(MiniJavaParser.VariableAssignmentStatementContext ctx) {
         if (print_enable && !block_print_disable){
-            int constantFoldingResult = constantFolding(ctx.expression(1));
-            if (constantFoldingResult == Integer.MAX_VALUE) {
-                printTree(ctx, ";");
-            }else{
-                tabPrint(indent_level);
-                System.out.println(ctx.expression(0).getText() + " = " + constantFoldingResult + " ;");
-            }
+//            int constantFoldingResult = constantFolding(ctx.expression(1));
+//            if (constantFoldingResult == Integer.MAX_VALUE) {
+//                printTree(ctx, ";");
+//            }else{
+//                tabPrint(indent_level);
+//                System.out.println(ctx.expression(0).getText() + " = " + constantFoldingResult + " ;");
+//            }
+            tabPrint(indent_level);
+            System.out.println(getExpression(ctx.expression(0)) + " = " + getExpression(ctx.expression(1)));
         }else {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
         }
@@ -640,20 +717,22 @@ public class ProgramOptimizer implements MiniJavaListener {
     @Override
     public void enterArrayAssignmentStatement(MiniJavaParser.ArrayAssignmentStatementContext ctx) {
         if (print_enable && !block_print_disable){
-            int constantFoldingResult1 = constantFolding(ctx.expression(0));
-            int constantFoldingResult2 = constantFolding(ctx.expression(1));
-            if (constantFoldingResult1 == Integer.MAX_VALUE && constantFoldingResult2 == Integer.MAX_VALUE) {
-                printTree(ctx, ")");
-            } else if (constantFoldingResult1 != Integer.MAX_VALUE && constantFoldingResult2 == Integer.MAX_VALUE){
-                tabPrint(indent_level);
-                System.out.println(getSubTree(ctx, "[") + constantFoldingResult1 + "] = " + ctx.expression(1).getText());
-            }else if (constantFoldingResult1 == Integer.MAX_VALUE && constantFoldingResult2 != Integer.MAX_VALUE){
-                tabPrint(indent_level);
-                System.out.println(getSubTree(ctx, "=") + constantFoldingResult2);
-            }else{
-                tabPrint(indent_level);
-                System.out.println(getSubTree(ctx, "[") + constantFoldingResult1 + "] = " + constantFoldingResult2);
-            }
+//            int constantFoldingResult1 = constantFolding(ctx.expression(0));
+//            int constantFoldingResult2 = constantFolding(ctx.expression(1));
+//            if (constantFoldingResult1 == Integer.MAX_VALUE && constantFoldingResult2 == Integer.MAX_VALUE) {
+//                printTree(ctx, ")");
+//            } else if (constantFoldingResult1 != Integer.MAX_VALUE && constantFoldingResult2 == Integer.MAX_VALUE){
+//                tabPrint(indent_level);
+//                System.out.println(getSubTree(ctx, "[") + constantFoldingResult1 + "] = " + ctx.expression(1).getText());
+//            }else if (constantFoldingResult1 == Integer.MAX_VALUE && constantFoldingResult2 != Integer.MAX_VALUE){
+//                tabPrint(indent_level);
+//                System.out.println(getSubTree(ctx, "=") + constantFoldingResult2);
+//            }else{
+//                tabPrint(indent_level);
+//                System.out.println(getSubTree(ctx, "[") + constantFoldingResult1 + "] = " + constantFoldingResult2);
+//            }
+            tabPrint(indent_level);
+            System.out.println(getSubTree(ctx, "[") + getExpression(ctx.expression(0)) + "] = " + getExpression(ctx.expression(1)));
         }else {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(0), new ArrayList<String>()));
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
@@ -680,13 +759,15 @@ public class ProgramOptimizer implements MiniJavaListener {
         if (! print_enable) {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(), new ArrayList<String>()));
         }else{
-            int constantFoldingValue = constantFolding(ctx.expression());
-            if (constantFoldingValue == Integer.MAX_VALUE){
-                printTree(ctx, ";");
-            }else {
-                tabPrint(indent_level);
-                System.out.println(constantFoldingValue + " ;");
-            }
+//            int constantFoldingValue = constantFolding(ctx.expression());
+//            if (constantFoldingValue == Integer.MAX_VALUE){
+//                printTree(ctx, ";");
+//            }else {
+//                tabPrint(indent_level);
+//                System.out.println(constantFoldingValue + " ;");
+//            }
+            tabPrint(indent_level);
+            System.out.println(getExpression(ctx.expression()) + " ;");
         }
     }
 
@@ -817,13 +898,13 @@ public class ProgramOptimizer implements MiniJavaListener {
     @Override
     public void enterArrayInstantiationExpression(MiniJavaParser.ArrayInstantiationExpressionContext ctx) {
         if (print_enable && !block_print_disable){
-            int constantFoldingResult = constantFolding(ctx.expression());
-            if (constantFoldingResult == Integer.MAX_VALUE) {
-                printTree(ctx, ";");
-            }else{
-                tabPrint(indent_level);
-                System.out.println(getSubTree(ctx, "[") + constantFoldingResult + "] ;");
-            }
+//            int constantFoldingResult = constantFolding(ctx.expression());
+//            if (constantFoldingResult == Integer.MAX_VALUE) {
+//                printTree(ctx, ";");
+//            }else{
+//                tabPrint(indent_level);
+//                System.out.println(getSubTree(ctx, "[") + constantFoldingResult + "] ;");
+//            }
         }
     }
 
@@ -932,9 +1013,10 @@ public class ProgramOptimizer implements MiniJavaListener {
 
     @Override
     public void enterAndExpression(MiniJavaParser.AndExpressionContext ctx) {
-        if (! print_enable)
+        if (! print_enable) {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(0), new ArrayList<String>()));
-        setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+            setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+        }
     }
 
     @Override
@@ -944,9 +1026,10 @@ public class ProgramOptimizer implements MiniJavaListener {
 
     @Override
     public void enterArrayAccessExpression(MiniJavaParser.ArrayAccessExpressionContext ctx) {
-        if (! print_enable)
+        if (! print_enable) {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(0), new ArrayList<String>()));
-        setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+            setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+        }
     }
 
     @Override
@@ -956,9 +1039,10 @@ public class ProgramOptimizer implements MiniJavaListener {
 
     @Override
     public void enterAddExpression(MiniJavaParser.AddExpressionContext ctx) {
-        if (! print_enable)
+        if (! print_enable) {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(0), new ArrayList<String>()));
-        setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+            setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+        }
     }
 
     @Override
@@ -1010,9 +1094,10 @@ public class ProgramOptimizer implements MiniJavaListener {
 
     @Override
     public void enterSubExpression(MiniJavaParser.SubExpressionContext ctx) {
-        if (! print_enable)
+        if (! print_enable) {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(0), new ArrayList<String>()));
-        setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+            setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+        }
     }
 
     @Override
@@ -1022,9 +1107,10 @@ public class ProgramOptimizer implements MiniJavaListener {
 
     @Override
     public void enterMulExpression(MiniJavaParser.MulExpressionContext ctx) {
-        if (! print_enable)
+        if (! print_enable) {
             setVariablesSeen(getExpressionUsedVariables(ctx.expression(0), new ArrayList<String>()));
-        setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+            setVariablesSeen(getExpressionUsedVariables(ctx.expression(1), new ArrayList<String>()));
+        }
     }
 
     @Override

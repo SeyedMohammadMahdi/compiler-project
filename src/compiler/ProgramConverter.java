@@ -447,7 +447,8 @@ public class ProgramConverter implements MiniJavaListener {
 
     @Override
     public void enterExpressioncall(MiniJavaParser.ExpressioncallContext ctx) {
-
+        tabPrint(indent_level);
+        System.out.println(getExpression(ctx.expression()) + ";");
     }
 
     @Override

@@ -46,13 +46,13 @@ public class ProgramPrinter implements MiniJavaListener {
                 this.errors.add(err);
                 System.out.println(err);
             }
-            boolean accesFlag = false;
-            if(aClass.accessErr) {
-                err = "Error310: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
-                this.errors.add(err);
-                accesFlag = true;
-//                System.out.println(err);
-            }
+//            boolean accesFlag = false;
+//            if(aClass.accessErr) {
+//                err = "Error310: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
+//                this.errors.add(err);
+//                accesFlag = true;
+////                System.out.println(err);
+//            }
 
 
                 if(this.circle.containsKey(aClass.name)){
@@ -67,17 +67,17 @@ public class ProgramPrinter implements MiniJavaListener {
                         }
                     }
 
-                    if(aClass.accessErr) {
-                        err = "Error310: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
-                        this.errors.add(err);
-                        accesFlag = true;
-//                        System.out.println(err);
-                    }
+//                    if(aClass.accessErr) {
+//                        err = "Error310: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
+//                        this.errors.add(err);
+//                        accesFlag = true;
+////                        System.out.println(err);
+//                    }
                 }
 
-            if(accesFlag){
-                System.out.println(err);
-            }
+//            if(accesFlag){
+//                System.out.println(err);
+//            }
         }
     }
 
@@ -953,12 +953,13 @@ class ClassInfo{
                     }
                     else {
                         if(this.methods.get(method.getKey()).equals("private") && (method.getValue().equals("public") || method.getValue().isEmpty())){
-                            if (this.accessErrLine > this.methodsLine.get(method.getKey())) {
-                                this.accessErr = true;
-                                this.accessErrLine = this.methodsLine.get(method.getKey());
-                                this.accessErrCol = this.methodsCol.get(method.getKey());
-                                this.errMethodName = method.getKey();
-                            }
+//                            if (this.accessErrLine > this.methodsLine.get(method.getKey())) {
+//                                this.accessErr = true;
+//                                this.accessErrLine = this.methodsLine.get(method.getKey());
+//                                this.accessErrCol = this.methodsCol.get(method.getKey());
+//                                this.errMethodName = method.getKey();
+//                            }
+                            System.out.println("Error310: [" + this.methodsLine.get(method.getKey()) + ":" + this.methodsCol.get(method.getKey()) + "] method [" + method.getKey() + "], the access level cannot be more restrictive than the overridden method's access level");
                         }
                     }
                 }
@@ -988,12 +989,13 @@ class ClassInfo{
         for (Map.Entry<String, String> method: this.methods.entrySet()){
             if (cls.methods.containsKey(method.getKey())) {
                 if (method.getValue().equals("private") && cls.methods.get(method.getKey()).equals("public") || cls.methods.get(method.getKey()).isEmpty()){
-                    if (this.accessErrLine > this.methodsLine.get(method.getKey())) {
-                        this.accessErr = true;
-                        this.accessErrLine = this.methodsLine.get(method.getKey());
-                        this.accessErrCol = this.methodsCol.get(method.getKey());
-                        this.errMethodName = method.getKey();
-                    }
+//                    if (this.accessErrLine > this.methodsLine.get(method.getKey())) {
+//                        this.accessErr = true;
+//                        this.accessErrLine = this.methodsLine.get(method.getKey());
+//                        this.accessErrCol = this.methodsCol.get(method.getKey());
+//                        this.errMethodName = method.getKey();
+//                    }
+                    System.out.println("Error310: [" + this.methodsLine.get(method.getKey()) + ":" + this.methodsCol.get(method.getKey()) + "] method [" + method.getKey() + "], the access level cannot be more restrictive than the overridden method's access level");
                 }
             }
         }

@@ -32,3 +32,15 @@ class test2 inherits test implements b {
 interface b {
     number d();
 }
+
+class a inherits c{
+    public number x(){
+
+    }
+}
+
+class c inherits a implements b{
+    private number x(){
+
+    }
+}

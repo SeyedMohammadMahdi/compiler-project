@@ -42,13 +42,13 @@ public class ProgramPrinter implements MiniJavaListener {
             aClass.hasError(this.interfaceMethods);
             String err = "";
             if (aClass.inheritanceErr) {
-                err = "Error: [" + aClass.line + ":" + aClass.column + "] class [" + aClass.name + "] must implement all abstract methods";
+                err = "Error420: [" + aClass.line + ":" + aClass.column + "] class [" + aClass.name + "] must implement all abstract methods";
                 this.errors.add(err);
                 System.out.println(err);
             }
             boolean accesFlag = false;
             if(aClass.accessErr) {
-                err = "Error: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
+                err = "Error310: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
                 this.errors.add(err);
                 accesFlag = true;
 //                System.out.println(err);
@@ -68,7 +68,7 @@ public class ProgramPrinter implements MiniJavaListener {
                     }
 
                     if(aClass.accessErr) {
-                        err = "Error: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
+                        err = "Error310: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
                         this.errors.add(err);
                         accesFlag = true;
 //                        System.out.println(err);
@@ -166,11 +166,12 @@ public class ProgramPrinter implements MiniJavaListener {
             this.circle.put(className, extend);
             String err = this.hasCircle(className);
             if(err != null) {
-                String error = "Error: Invalid Inheritance: [" + ctx.getStart().getLine() + ":" + (ctx.inherits.getCharPositionInLine()) + "] " + err;
+                String error = "Error410: [" + ctx.getStart().getLine() + ":" + (ctx.inherits.getCharPositionInLine()) + "] " + "Invalid Inheritance: " + err;
                 this.errors.add(error);
             }
         }
-        this.currentClass = new ClassInfo(ctx.className.getText(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+//        ctx.className.getCharPositionInLine()
+        this.currentClass = new ClassInfo(ctx.className.getText(), ctx.getStart().getLine(), ctx.className.getCharPositionInLine());
         if(ctx.implements_ != null){
             value += " (implements: ";
 

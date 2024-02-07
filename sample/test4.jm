@@ -33,13 +33,13 @@ interface b {
     number d();
 }
 
-class a inherits c{
+class a inherits chhh{
     public number x(){
 
     }
 }
 
-class c inherits a implements b{
+class chhh inherits a implements b{
     private number x(){
 
     }

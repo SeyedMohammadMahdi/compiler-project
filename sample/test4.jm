@@ -13,22 +13,22 @@ print(b.set(3));
 }
 }
 
-class Rest inherits Base {
-}
-class Base inherits Derived implements test, best{
-    private number getFace(number te);
-}
+class test{
+    public number t(){
 
-class Derived inherits Rest {
-
+    }
 }
 
-interface test{
-final number[] a = {1,2};
-public number getFace(number te);
+class test2 inherits test implements b {
+    private number t(){
+
+    }
+
+    private number d(){
+
+    }
 }
 
-interface best{
-final number[] a = {1,2};
-number getace(number te);
+interface b {
+    number d();
 }

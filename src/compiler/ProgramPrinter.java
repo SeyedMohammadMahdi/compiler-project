@@ -40,15 +40,42 @@ public class ProgramPrinter implements MiniJavaListener {
 
         for (ClassInfo aClass : this.classes) {
             aClass.hasError(this.interfaceMethods);
-            String err;
+            String err = "";
             if (aClass.inheritanceErr) {
                 err = "Error: [" + aClass.line + ":" + aClass.column + "] class [" + aClass.name + "] must implement all abstract methods";
                 this.errors.add(err);
                 System.out.println(err);
             }
+            boolean accesFlag = false;
             if(aClass.accessErr) {
                 err = "Error: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
                 this.errors.add(err);
+                accesFlag = true;
+//                System.out.println(err);
+            }
+
+
+                if(this.circle.containsKey(aClass.name)){
+//                    aClass.hasClassOverrideError(());
+
+
+                    for (ClassInfo cls : this.classes){
+                        if(this.circle.get(aClass.name).equals(cls.name)){
+//                            System.out.println("*******************************");
+                            aClass.hasClassOverrideError(cls);
+                            break;
+                        }
+                    }
+
+                    if(aClass.accessErr) {
+                        err = "Error: [" + aClass.accessErrLine + ":" + aClass.accessErrCol + "] method [" + aClass.errMethodName + "], the access level cannot be more restrictive than the overridden method's access level";
+                        this.errors.add(err);
+                        accesFlag = true;
+//                        System.out.println(err);
+                    }
+                }
+
+            if(accesFlag){
                 System.out.println(err);
             }
         }
@@ -143,11 +170,11 @@ public class ProgramPrinter implements MiniJavaListener {
                 this.errors.add(error);
             }
         }
-
+        this.currentClass = new ClassInfo(ctx.className.getText(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
         if(ctx.implements_ != null){
             value += " (implements: ";
 
-            this.currentClass = new ClassInfo(ctx.className.getText(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
+//            this.currentClass = new ClassInfo(ctx.className.getText(), ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine());
 
             for (;i < ctx.Identifier().size(); i++){
                 value += ctx.Identifier(i).getText();
@@ -172,9 +199,9 @@ public class ProgramPrinter implements MiniJavaListener {
     @Override
     public void exitClassDeclaration(MiniJavaParser.ClassDeclarationContext ctx) {
         this.currentScope.pop();
-        if(ctx.implements_ != null){
+//        if(ctx.implements_ != null){
             this.classes.add(this.currentClass);
-        }
+//        }
     }
 
     @Override
@@ -889,10 +916,11 @@ class ClassInfo{
     Map<String, Integer> methodsLine;
     Map<String, Integer> methodsCol;
     List<String> implementings;
-    int accessErrLine;
+    int accessErrLine = 10000000;
     int accessErrCol;
     boolean inheritanceErr = false;
     boolean accessErr = false;
+    String inherit;
     String errMethodName;
     ClassInfo(String name, int line, int column){
         this.name = name;
@@ -904,6 +932,16 @@ class ClassInfo{
         this.implementings = new ArrayList<>();
     }
 
+    ClassInfo(String name, int line, int column, String inherit){
+        this.name = name;
+        this.line = line;
+        this.column = column;
+        this.inherit = inherit;
+        this.methods = new LinkedHashMap<>();
+        this.methodsLine = new LinkedHashMap<>();
+        this.methodsCol = new LinkedHashMap<>();
+        this.implementings = new ArrayList<>();
+    }
     void hasError(Map<String, Map<String, String>> interfaces){
         for (String imp : this.implementings){
             if(interfaces.containsKey(imp)){
@@ -912,13 +950,48 @@ class ClassInfo{
                     if(!this.methods.containsKey(method.getKey())){
                         this.inheritanceErr =  true;
                     }
-                    else if(!this.accessErr){
+                    else {
                         if(this.methods.get(method.getKey()).equals("private") && (method.getValue().equals("public") || method.getValue().isEmpty())){
-                            this.accessErr = true;
-                            this.accessErrLine = this.methodsLine.get(method.getKey());
-                            this.accessErrCol = this.methodsCol.get(method.getKey());
-                            this.errMethodName = method.getKey();
+                            if (this.accessErrLine > this.methodsLine.get(method.getKey())) {
+                                this.accessErr = true;
+                                this.accessErrLine = this.methodsLine.get(method.getKey());
+                                this.accessErrCol = this.methodsCol.get(method.getKey());
+                                this.errMethodName = method.getKey();
+                            }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    void hasClassOverrideError(ClassInfo cls){
+//        for (String imp : this.implementings){
+//            if(interfaces.containsKey(imp)){
+////                Iterator it = interfaces.get(imp).it
+//                for (Map.Entry<String, String> method : interfaces.get(imp).entrySet()){
+//                    if(!this.methods.containsKey(method.getKey())){
+//                        this.inheritanceErr =  true;
+//                    }
+//                    else if(!this.accessErr){
+//                        if(this.methods.get(method.getKey()).equals("private") && (method.getValue().equals("public") || method.getValue().isEmpty())){
+//                            this.accessErr = true;
+//                            this.accessErrLine = this.methodsLine.get(method.getKey());
+//                            this.accessErrCol = this.methodsCol.get(method.getKey());
+//                            this.errMethodName = method.getKey();
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        for (Map.Entry<String, String> method: this.methods.entrySet()){
+            if (cls.methods.containsKey(method.getKey())) {
+                if (method.getValue().equals("private") && cls.methods.get(method.getKey()).equals("public") || cls.methods.get(method.getKey()).isEmpty()){
+                    if (this.accessErrLine > this.methodsLine.get(method.getKey())) {
+                        this.accessErr = true;
+                        this.accessErrLine = this.methodsLine.get(method.getKey());
+                        this.accessErrCol = this.methodsCol.get(method.getKey());
+                        this.errMethodName = method.getKey();
                     }
                 }
             }
